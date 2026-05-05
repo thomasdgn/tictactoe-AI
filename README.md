@@ -1,10 +1,69 @@
 # Ultimate Tic Tac Toe AI
 
-Ce projet contient un moteur d'Ultimate Tic Tac Toe ecrit en Rust stable, sans dependance externe, pense pour un challenge universitaire en environnement terminal simple comme Google Colab.
+## Présentation du projet
 
-L'objectif n'est pas de resoudre parfaitement le jeu, mais de produire une IA pratique, rapide, robuste, et difficile a battre sous contrainte de temps.
+Ce projet contient une intelligence artificielle capable de jouer à l’**Ultimate Tic Tac Toe**, une variante plus complexe du morpion classique.
 
-## Etat du projet
+Le projet a été développé en **Rust stable**, sans dépendance externe, avec pour objectif de produire une IA :
+
+- rapide ;
+- robuste ;
+- difficile à battre ;
+- compatible avec un environnement simple comme un terminal ou Google Colab ;
+- adaptée à un challenge universitaire où les coups sont chronométrés.
+
+L’objectif n’est pas de résoudre parfaitement tout l’arbre du jeu, ce qui serait trop coûteux, mais de construire une IA capable de prendre de bonnes décisions en temps limité grâce à une recherche intelligente et une heuristique bien réglée.
+
+Le moteur repose principalement sur :
+
+- Minimax sous forme Negamax ;
+- élagage Alpha-Beta ;
+- heuristique maison ;
+- iterative deepening ;
+- table de transposition ;
+- Zobrist hashing ;
+- move ordering avancé ;
+- modes de benchmark, d’entraînement et de tournoi.
+
+---
+
+## Objectif du challenge
+
+L’Ultimate Tic Tac Toe est un jeu à deux joueurs joué sur une grille de `9 x 9`, composée de neuf petits morpions `3 x 3`.
+
+Le but est de gagner trois petits morpions alignés sur le grand plateau.
+
+À chaque coup, la case jouée dans un petit morpion détermine le petit plateau dans lequel l’adversaire devra jouer au tour suivant. Cette contrainte rend le jeu beaucoup plus tactique qu’un morpion classique.
+
+Dans ce projet, l’IA doit respecter plusieurs contraintes importantes :
+
+- les décisions doivent être calculées à la volée ;
+- l’utilisation d’un dictionnaire de coups ou d’un opening book est interdite ;
+- le moteur doit reposer sur Minimax ;
+- l’élagage Alpha-Beta est utilisé pour accélérer la recherche ;
+- une heuristique est nécessaire pour éviter d’explorer tout l’arbre du jeu ;
+- le programme doit pouvoir tourner sur Google Colab ;
+- l’interface texte suffit.
+
+Nous avons donc cherché à construire une IA pratique, rapide et stable, plutôt qu’une IA théoriquement parfaite mais trop lente ou trop fragile.
+
+---
+
+## Pourquoi Rust ?
+
+Rust a été choisi pour plusieurs raisons.
+
+D’abord, Rust est un langage compilé très rapide, ce qui est intéressant pour un moteur de recherche adversarial comme Minimax. Plus le moteur est rapide, plus il peut explorer de positions dans le même temps.
+
+Ensuite, Rust permet de contrôler finement la mémoire. Dans ce projet, cela permet d’éviter les copies inutiles du plateau et de limiter les allocations dans les parties critiques du programme.
+
+Enfin, Rust reste compatible avec une exécution simple en terminal et peut être utilisé sur Google Colab après installation de la toolchain Rust.
+
+Ce choix permet donc d’avoir un moteur performant, tout en restant suffisamment lisible pour un rendu universitaire.
+
+---
+
+## État actuel du projet
 
 Le programme compile et tourne en release avec :
 
@@ -14,162 +73,398 @@ cargo build --release
 cargo run --release
 ```
 
-Le moteur supporte :
+Le moteur supporte actuellement :
 
-- humain vs IA
-- IA vs IA
-- choix du joueur qui commence
-- saisie humaine sous la forme `colonne ligne`, de `1 1` a `9 9`
-- parties repetees sans relancer le programme
-- mode d'entrainement/tuning par self-play avec `--train`
-- mode benchmark exportant des resultats en CSV avec `--bench`
-- mode tournoi de profils heuristiques avec `--tournament`
-- tests unitaires des regles principales avec `cargo test`
+- humain contre IA ;
+- IA contre IA ;
+- choix du joueur qui commence ;
+- saisie humaine sous la forme `colonne ligne`, de `1 1` à `9 9` ;
+- parties répétées sans relancer le programme ;
+- mode d’entraînement par self-play avec `--train` ;
+- mode benchmark exportant des résultats en CSV avec `--bench` ;
+- mode tournoi de profils heuristiques avec `--tournament` ;
+- tests unitaires des règles principales avec `cargo test`.
 
-Le code principal est dans `src/main.rs`.
+Le code principal est situé dans :
 
-## Architecture
+```text
+src/main.rs
+```
 
-Le projet reste volontairement dans un seul fichier Rust pour faciliter le rendu, la compilation et l'execution en Colab. Le fichier est cependant separe en blocs logiques :
+---
 
-1. constantes et poids d'evaluation
-2. representation du plateau
-3. detection des victoires locales
-4. detection des victoires globales
-5. generation des coups legaux
-6. application et annulation des coups
-7. evaluation heuristique
-8. moteur de recherche Minimax/Negamax
-9. gestion du temps
-10. interface texte
-11. mode self-play et tuning
-12. tests unitaires des regles
+## Structure du projet
 
-Cette organisation permet de garder un programme autonome tout en separant clairement les responsabilites.
+Le projet est volontairement gardé simple.
 
-## Representation du plateau
+```text
+TICTACTOE-AI/
+├── src/
+│   └── main.rs
+├── Cargo.toml
+├── Cargo.lock
+├── README.md
+├── .gitignore
+```
 
-Le plateau global 9x9 est stocke dans un tableau fixe de `81` cases.
+Le fichier `src/main.rs` contient tout le moteur. Ce choix a été fait pour faciliter :
+
+- le rendu du projet ;
+- la compilation sur une nouvelle machine ;
+- l’exécution sur Google Colab ;
+- la lecture globale du code.
+
+Même si le projet tient dans un seul fichier, le code est organisé en blocs logiques :
+
+1. constantes et poids d’évaluation ;
+2. représentation du plateau ;
+3. détection des victoires locales ;
+4. détection des victoires globales ;
+5. génération des coups légaux ;
+6. application et annulation des coups ;
+7. évaluation heuristique ;
+8. moteur de recherche Minimax / Negamax ;
+9. gestion du temps ;
+10. interface texte ;
+11. modes self-play, benchmark et tournoi ;
+12. tests unitaires.
+
+Cette organisation permet d’avoir un programme autonome, tout en gardant une séparation claire entre les responsabilités.
+
+---
+
+## Représentation du plateau
+
+Le plateau global `9 x 9` est stocké dans un tableau fixe de `81` cases.
 
 Chaque case contient :
 
-- `0` pour vide
-- `1` pour X
-- `2` pour O
+```text
+0 = case vide
+1 = joueur X
+2 = joueur O
+```
 
-Le moteur maintient aussi :
+Le moteur maintient également plusieurs informations importantes :
 
-- `local_status[9]` pour savoir si chaque sous-plateau est ouvert, gagne par X, gagne par O, ou nul
-- `global_status` pour le resultat global
-- `current_player` pour le joueur courant
-- `next_board` pour le sous-plateau impose au prochain coup
-- `ply` pour le nombre de demi-coups joues
-- `hash` pour la table de transposition
+- `local_status[9]` : statut de chaque petit morpion ;
+- `global_status` : statut global de la partie ;
+- `current_player` : joueur au trait ;
+- `next_board` : petit plateau imposé au prochain coup ;
+- `ply` : nombre de demi-coups joués ;
+- `hash` : hash Zobrist de la position courante.
 
-La representation est compacte, cache-friendly, et evite les allocations inutiles dans les fonctions appelees par la recherche.
+Cette représentation est compacte, rapide et adaptée à la recherche en profondeur.
 
-## Regles implementees
+Elle permet aussi d’éviter des allocations inutiles dans les fonctions les plus appelées par l’IA.
 
-Les regles d'Ultimate Tic Tac Toe sont gerees sans simplification :
+---
 
-- un coup est joue sur une coordonnee globale 9x9
-- le coup envoie l'adversaire dans le sous-plateau correspondant a la position locale jouee
-- si le sous-plateau de destination est deja gagne ou nul, le prochain joueur peut jouer dans n'importe quel sous-plateau encore ouvert
-- un sous-plateau local est gagne par alignement de 3
-- le plateau global est gagne par alignement de 3 sous-plateaux gagnes
-- si tous les sous-plateaux sont fermes sans gagnant global, la partie est nulle
+## Règles implémentées
 
-Les coups humains invalides sont refuses proprement.
+Les règles d’Ultimate Tic Tac Toe sont gérées sans simplification.
+
+Le moteur prend en compte les règles suivantes :
+
+- un coup est joué sur une coordonnée globale `9 x 9` ;
+- le coup envoie l’adversaire dans le sous-plateau correspondant à la position locale jouée ;
+- si le sous-plateau de destination est déjà gagné ou nul, le prochain joueur peut jouer dans n’importe quel sous-plateau encore ouvert ;
+- un sous-plateau local est gagné par un alignement de trois symboles ;
+- le plateau global est gagné par un alignement de trois sous-plateaux gagnés ;
+- si tous les sous-plateaux sont fermés sans gagnant global, la partie est déclarée nulle.
+
+Les coups humains invalides sont refusés proprement par le programme.
+
+---
 
 ## Recherche IA
 
-L'IA respecte les contraintes du sujet :
+L’IA respecte les contraintes du sujet.
 
-- Minimax est utilise sous forme Negamax
-- Alpha-Beta pruning est implemente
-- aucun opening book
-- aucune table de coups pre-calculee
-- les decisions sont calculees a la volee
-- la table de transposition sert uniquement de cache de recherche
+Elle utilise :
 
-Le moteur utilise aussi :
+- Minimax sous forme Negamax ;
+- Alpha-Beta pruning ;
+- aucune table de coups pré-calculée ;
+- aucun opening book ;
+- aucune mémorisation de parties ;
+- une table de transposition utilisée uniquement comme cache de recherche.
 
-- iterative deepening
-- aspiration windows
-- Zobrist hashing
-- transposition table
-- principal variation via le meilleur coup stocke en table
-- killer moves
-- history heuristic
-- move ordering tactique
-- extensions tactiques simples en bord de recherche
-- arret propre quand le temps expire
+Le moteur utilise aussi plusieurs optimisations classiques des moteurs de jeu :
 
-Si une recherche est interrompue par le temps, le moteur conserve le meilleur coup issu de la derniere profondeur entierement terminee.
+- iterative deepening ;
+- aspiration windows ;
+- Zobrist hashing ;
+- transposition table ;
+- principal variation via le meilleur coup stocké en table ;
+- killer moves ;
+- history heuristic ;
+- move ordering tactique ;
+- extensions tactiques simples en bord de recherche ;
+- arrêt propre quand le temps expire.
 
-## Evaluation heuristique
+Si une recherche est interrompue par la limite de temps, le moteur conserve le meilleur coup issu de la dernière profondeur entièrement terminée.
 
-L'evaluation retourne un score absolu favorable a X, puis le moteur le convertit selon le joueur au trait pour le Negamax.
+Cela évite que l’IA perde du temps dans une recherche incomplète sans pouvoir jouer de bon coup.
 
-Elle combine plusieurs niveaux.
+---
 
-### Evaluation globale
+## Évaluation heuristique
+
+L’évaluation retourne un score absolu favorable à X, puis le moteur le convertit selon le joueur au trait pour le Negamax.
+
+L’heuristique est construite sur plusieurs niveaux.
+
+---
+
+### Évaluation globale
 
 Le moteur valorise :
 
-- victoire globale immediate avec un score massif
-- controle du centre macro
-- controle des coins macro
-- controle des bords macro
-- lignes macro avec 2 sous-plateaux gagnes et une case encore ouverte
-- penalites pour menaces macro adverses
+- une victoire globale immédiate avec un score massif ;
+- le contrôle du centre du grand plateau ;
+- le contrôle des coins du grand plateau ;
+- le contrôle des bords du grand plateau ;
+- les lignes globales avec deux sous-plateaux gagnés et une troisième case encore ouverte ;
+- les pénalités liées aux menaces globales adverses.
 
-Apres entrainement local, les poids par defaut favorisent davantage le centre macro et reduisent un peu la valeur des coins macro.
+L’idée est de ne pas seulement gagner des petits morpions, mais de gagner les bons petits morpions : ceux qui permettent de former une ligne sur le grand plateau.
 
-### Evaluation locale
+---
 
-Pour chaque sous-plateau ouvert, le moteur regarde :
+### Évaluation locale
 
-- centre local
-- coins locaux
-- bords locaux
-- une piece dans une ligne encore ouverte
-- deux pieces dans une ligne avec une case vide
-- menace adverse locale a bloquer
+Pour chaque sous-plateau encore ouvert, le moteur analyse :
 
-Un sous-plateau gagne a une forte valeur, mais sa valeur depend aussi de sa position dans le plateau global.
+- le centre local ;
+- les coins locaux ;
+- les bords locaux ;
+- les lignes contenant une pièce et des cases libres ;
+- les lignes contenant deux pièces et une case libre ;
+- les menaces adverses à bloquer.
 
-### Destination forcee
+Un sous-plateau gagné a une forte valeur, mais cette valeur dépend aussi de sa position dans le plateau global.
 
-Ultimate Tic Tac Toe est surtout tactique parce que chaque coup impose souvent le prochain sous-plateau adverse.
+Par exemple, gagner le centre du grand plateau est généralement plus intéressant que gagner un bord isolé.
 
-Le moteur evalue donc explicitement :
+---
 
-- si le sous-plateau envoye est favorable au joueur qui va jouer
-- combien de coups restent disponibles dans ce sous-plateau
-- si l'adversaire est envoye dans une position contrainte
-- si le coup libere l'adversaire en l'envoyant vers un plateau ferme
+### Destination forcée
 
-Ce terme est volontairement modere : il aide l'ordre strategique sans dominer les victoires locales ou globales.
+L’une des particularités les plus importantes de l’Ultimate Tic Tac Toe est la destination forcée.
+
+À chaque coup, on envoie l’adversaire dans un sous-plateau précis. Cette mécanique est essentielle, car un bon coup n’est pas seulement un coup qui améliore notre position : c’est aussi un coup qui limite les possibilités adverses.
+
+Le moteur évalue donc explicitement :
+
+- si le sous-plateau envoyé est favorable au joueur qui va jouer ;
+- combien de coups restent disponibles dans ce sous-plateau ;
+- si l’adversaire est envoyé dans une position contrainte ;
+- si le coup libère l’adversaire en l’envoyant vers un plateau déjà fermé.
+
+Ce terme reste volontairement modéré pour ne pas dominer les critères plus importants comme les victoires locales ou globales.
+
+---
 
 ## Move ordering
 
 Avant de rechercher les coups, le moteur les trie avec une heuristique rapide.
 
-Priorite approximative :
+L’ordre approximatif de priorité est le suivant :
 
-1. meilleur coup de la table de transposition
-2. killer moves
-3. coups ayant deja provoque des coupes via history heuristic
-4. victoire globale immediate
-5. blocage de menace globale
-6. victoire locale
-7. blocage local
-8. coup envoyant l'adversaire vers un plateau faible ou contraint
-9. centre local
-10. coins locaux
+1. meilleur coup connu dans la table de transposition ;
+2. killer moves ;
+3. coups ayant déjà provoqué des coupes via la history heuristic ;
+4. victoire globale immédiate ;
+5. blocage d’une menace globale ;
+6. victoire locale ;
+7. blocage local ;
+8. coup envoyant l’adversaire vers un plateau faible ou contraint ;
+9. centre local ;
+10. coins locaux.
 
-Un bon ordre des coups est essentiel : Alpha-Beta coupe beaucoup plus quand les bons coups sont essayes tot.
+Le move ordering est une partie très importante du moteur.
+
+Un bon ordre des coups permet à Alpha-Beta de couper beaucoup plus de branches. Cela revient à explorer moins de positions tout en conservant une bonne qualité de décision.
+
+---
+
+## Installation complète sur une nouvelle machine avec VS Code
+
+Cette section explique comment installer et lancer le projet de zéro sur une machine qui ne possède pas encore forcément Rust, Cargo ou les outils nécessaires.
+
+---
+
+### 1. Installer Visual Studio Code
+
+Télécharger et installer Visual Studio Code.
+
+Ensuite, ouvrir VS Code et installer l’extension suivante :
+
+```text
+rust-analyzer
+```
+
+Cette extension permet d’avoir :
+
+- l’autocomplétion Rust ;
+- les erreurs en direct ;
+- la navigation dans le code ;
+- une meilleure expérience de développement.
+
+---
+
+### 2. Installer Rust et Cargo
+
+Rust s’installe avec `rustup`.
+
+#### Sur Linux ou macOS
+
+Dans un terminal :
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Choisir l’installation par défaut :
+
+```text
+1) Proceed with standard installation
+```
+
+Fermer puis rouvrir le terminal.
+
+Vérifier ensuite l’installation :
+
+```bash
+rustc --version
+cargo --version
+```
+
+Si les deux commandes affichent une version, Rust est correctement installé.
+
+---
+
+#### Sur Windows
+
+Sur Windows, il est recommandé d’installer Rust via `rustup-init.exe`.
+
+Après installation, ouvrir un nouveau terminal PowerShell ou le terminal intégré de VS Code, puis vérifier :
+
+```powershell
+rustc --version
+cargo --version
+```
+
+Si Rust demande l’installation des outils Microsoft C++ Build Tools, accepter l’installation, car ils peuvent être nécessaires pour compiler certains projets Rust sur Windows.
+
+---
+
+### 3. Récupérer le projet
+
+Deux possibilités existent.
+
+#### Option A : avec Git
+
+Dans le terminal :
+
+```bash
+git clone <URL_DU_REPO>
+cd TICTACTOE-AI
+```
+
+#### Option B : avec un fichier ZIP
+
+1. Télécharger le projet sous forme de ZIP.
+2. Extraire le dossier.
+3. Ouvrir le dossier `TICTACTOE-AI` dans VS Code.
+
+Attention : il faut ouvrir le dossier qui contient directement `Cargo.toml`.
+
+---
+
+### 4. Vérifier que le projet est bien reconnu
+
+Dans le terminal intégré de VS Code, vérifier que l’on est bien dans le dossier du projet.
+
+La commande suivante doit afficher les fichiers du projet :
+
+```bash
+ls
+```
+
+Sur Windows PowerShell :
+
+```powershell
+dir
+```
+
+On doit voir notamment :
+
+```text
+Cargo.toml
+Cargo.lock
+README.md
+src
+```
+
+---
+
+### 5. Vérifier le code
+
+Avant de compiler en release, lancer :
+
+```bash
+cargo check
+```
+
+Cette commande vérifie que le projet est correct sans produire le binaire final optimisé.
+
+Ensuite, lancer les tests :
+
+```bash
+cargo test
+```
+
+Si tout passe, le projet est prêt à être compilé.
+
+---
+
+### 6. Compiler le projet
+
+Pour compiler en mode optimisé :
+
+```bash
+cargo build --release
+```
+
+Le binaire final est généré dans :
+
+```text
+target/release/
+```
+
+En général, il n’est pas nécessaire d’aller directement dans ce dossier, car on peut lancer le programme avec `cargo run`.
+
+---
+
+### 7. Lancer le programme
+
+Pour lancer le programme en mode normal :
+
+```bash
+cargo run --release
+```
+
+Le programme demande ensuite :
+
+- le mode de jeu ;
+- le joueur qui commence ;
+- la profondeur maximale ;
+- le temps par coup ;
+- le côté humain si le mode humain contre IA est choisi.
+
+---
 
 ## Mode interactif
 
@@ -181,11 +476,22 @@ cargo run --release
 
 Le programme demande :
 
-- mode `h` pour humain vs IA ou `a` pour IA vs IA
-- joueur qui commence, `x` ou `o`
-- profondeur maximale
-- temps par coup en millisecondes, ou `0` pour recherche sans limite de temps
-- cote humain si le mode humain vs IA est choisi
+```text
+h = humain vs IA
+a = IA vs IA
+```
+
+Puis il demande le joueur qui commence :
+
+```text
+x ou o
+```
+
+Il demande ensuite :
+
+- la profondeur maximale ;
+- le temps par coup en millisecondes ;
+- le côté humain si besoin.
 
 Pour jouer un coup humain, entrer :
 
@@ -199,11 +505,42 @@ Exemple :
 5 5
 ```
 
-Les colonnes et lignes vont de 1 a 9.
+Les colonnes et lignes vont de `1` à `9`.
+
+Le programme affiche ensuite la grille mise à jour après chaque coup.
+
+---
+
+## Exemple de partie rapide IA contre IA
+
+Pour lancer une partie IA contre IA manuellement :
+
+```bash
+cargo run --release
+```
+
+Puis entrer :
+
+```text
+a
+x
+4
+250
+```
+
+Cela lance une partie IA contre IA avec :
+
+- X qui commence ;
+- profondeur maximale 4 ;
+- 250 ms par coup.
+
+---
 
 ## Mode benchmark CSV
 
-Le mode benchmark lance plusieurs parties IA vs IA silencieuses et exporte un fichier CSV :
+Le mode benchmark lance plusieurs parties IA contre IA silencieuses et exporte un fichier CSV.
+
+Syntaxe :
 
 ```bash
 cargo run --release -- --bench <games> <depth> <time_ms> <output.csv>
@@ -215,35 +552,45 @@ Exemple :
 cargo run --release -- --bench 50 4 200 benchmark.csv
 ```
 
-Colonnes exportees :
+Exemple plus sérieux :
 
-- numero de partie
-- joueur qui commence
-- gagnant
-- nombre de coups
-- profondeur
-- temps par coup
-- nombre de coups d'ouverture randomises
-- duree de la partie en millisecondes
-- nombre total de noeuds explores
-- nombre de coups vraiment recherches par l'IA
-- profondeur moyenne atteinte
-- recherches terminees completement
-- recherches interrompues par le temps
-- score moyen retourne par la recherche
-- noeuds explores par milliseconde
+```bash
+cargo run --release -- --bench 200 4 250 benchmark.csv
+```
 
-Ce mode sert a comparer des reglages avant/apres, mesurer la stabilite, et produire des traces exploitables dans Colab ou dans un tableur.
+Le CSV exporte notamment :
 
-## Mode entrainement
+- numéro de partie ;
+- joueur qui commence ;
+- gagnant ;
+- nombre de coups ;
+- profondeur ;
+- temps par coup ;
+- nombre de coups d’ouverture randomisés ;
+- durée de la partie en millisecondes ;
+- nombre total de nœuds explorés ;
+- nombre de coups vraiment recherchés par l’IA ;
+- profondeur moyenne atteinte ;
+- recherches terminées complètement ;
+- recherches interrompues par le temps ;
+- score moyen retourné par la recherche ;
+- nœuds explorés par milliseconde.
 
-Le projet inclut un tuner par self-play :
+Ce mode sert à comparer les réglages avant et après modification des poids heuristiques.
+
+---
+
+## Mode entraînement
+
+Le projet inclut un tuner par self-play.
+
+Syntaxe simple :
 
 ```bash
 cargo run --release -- --train
 ```
 
-Syntaxe complete :
+Syntaxe complète :
 
 ```bash
 cargo run --release -- --train <rounds> <games> <depth> <time_ms>
@@ -255,33 +602,39 @@ Exemple rapide :
 cargo run --release -- --train 2 3 3 80
 ```
 
-Exemple plus serieux :
+Exemple plus sérieux :
 
 ```bash
 cargo run --release -- --train 5 12 4 200
 ```
 
-Signification :
+Signification des paramètres :
 
-- `rounds` : nombre de passes de tuning
-- `games` : nombre de paires de parties par candidat
-- `depth` : profondeur de recherche pendant le tuning
-- `time_ms` : budget par coup pendant le tuning
+- `rounds` : nombre de passes de tuning ;
+- `games` : nombre de paires de parties par candidat ;
+- `depth` : profondeur de recherche pendant le tuning ;
+- `time_ms` : budget par coup pendant le tuning.
 
-Le tuner compare des variantes de poids contre le meilleur profil courant. Chaque candidat joue des parties comme X et comme O. Les ouvertures sont legerement randomisees pendant le tuning pour eviter de comparer toujours la meme partie deterministe.
+Le tuner compare des variantes de poids contre le meilleur profil courant. Chaque candidat joue des parties comme X et comme O.
 
-La generation des candidats combine maintenant :
+Les ouvertures sont légèrement randomisées pendant le tuning afin d’éviter de comparer toujours la même partie déterministe.
 
-- variations coordonnee par coordonnee
-- variations positives et negatives
-- mutations aleatoires sur plusieurs poids a la fois
-- ouvertures randomisees de longueur variable
+La génération des candidats combine :
 
-Important : ce mode ne cree pas d'opening book. Il ne stocke pas de dictionnaire de positions. Il sert uniquement a trouver de meilleurs poids generaux pour l'evaluation.
+- variations coordonnée par coordonnée ;
+- variations positives et négatives ;
+- mutations aléatoires sur plusieurs poids à la fois ;
+- ouvertures randomisées de longueur variable.
+
+Important : ce mode ne crée pas d’opening book. Il ne stocke pas de dictionnaire de positions. Il sert uniquement à trouver de meilleurs poids généraux pour l’évaluation.
+
+---
 
 ## Mode tournoi de profils
 
-Le mode tournoi compare automatiquement plusieurs profils de poids et exporte un classement CSV :
+Le mode tournoi compare automatiquement plusieurs profils de poids et exporte un classement CSV.
+
+Syntaxe :
 
 ```bash
 cargo run --release -- --tournament <profiles> <games_per_pair> <depth> <time_ms> <generations> <output.csv>
@@ -293,55 +646,98 @@ Exemple rapide :
 cargo run --release -- --tournament 8 2 3 100 2 tournament.csv
 ```
 
-Exemple plus serieux :
+Exemple plus sérieux :
 
 ```bash
 cargo run --release -- --tournament 20 4 4 200 5 tournament.csv
 ```
 
-Le programme genere des variantes autour des poids actuels, puis chaque profil affronte les autres comme X et comme O. En mode multi-generation, il garde les meilleurs profils, mute leurs poids, puis relance un tournoi. Le CSV final contient :
-
-- rang
-- identifiant du profil
-- points
-- victoires
-- nulles
-- defaites
-- nombre de parties
-- nombre de generations utilisees
-- tous les poids heuristiques du profil
-
-Ce mode est plus proche d'une selection evolutive que d'une memorisation de parties. Il reste compatible avec les contraintes du challenge, car l'IA ne consulte pas une base de coups pendant une partie.
-
-## Peut-on memoriser toutes les parties ?
-
-Pour le morpion classique 3x3, c'est realisable. Le nombre de parties legales est petit, et l'on peut construire une table parfaite par retro-analyse ou Minimax complet. Avec cette approche, une IA peut toujours au moins faire nul, et gagner si l'adversaire se trompe.
-
-Pour l'Ultimate Tic Tac Toe, ce n'est pas comparable. L'espace de positions est immense : le jeu contient 81 cases et une contrainte de destination qui cree beaucoup plus de branches que le morpion classique. Stocker toutes les parties ou toutes les positions utiles serait beaucoup trop volumineux pour ce projet et reviendrait aussi a construire une base de coups pre-calculee, ce qui est interdit par les consignes.
-
-L'approche adaptee ici est donc :
-
-- utiliser Minimax/Alpha-Beta pour calculer les coups a la volee
-- utiliser la table de transposition comme cache temporaire de recherche
-- tuner les poids heuristiques avec self-play
-- classer les profils par tournoi CSV
-- ne pas embarquer de dictionnaire de coups dans l'IA finale
-
-## Resultat du tuning actuel
-
-Un premier tuning local avait ete lance avec :
-
-```bash
-cargo run --release -- --train 3 5 3 80
-```
-
-Ensuite, un tournoi plus serieux a ete lance dans Colab avec :
+Commande utilisée pour le tuning Colab principal :
 
 ```bash
 cargo run --release -- --tournament 24 4 4 250 5 tournament.csv
 ```
 
-Ce tournoi a pris environ 35 minutes et a produit le profil gagnant suivant, maintenant integre dans les constantes par defaut :
+Le programme génère des variantes autour des poids actuels, puis chaque profil affronte les autres comme X et comme O.
+
+En mode multi-génération, il conserve les meilleurs profils, mute leurs poids, puis relance un tournoi.
+
+Le CSV final contient :
+
+- rang ;
+- identifiant du profil ;
+- points ;
+- victoires ;
+- nulles ;
+- défaites ;
+- nombre de parties ;
+- nombre de générations utilisées ;
+- tous les poids heuristiques du profil.
+
+Ce mode est plus proche d’une sélection évolutive que d’une mémorisation de parties. Il reste compatible avec les contraintes du challenge, car l’IA ne consulte pas une base de coups pendant une partie.
+
+---
+
+## Peut-on mémoriser toutes les parties ?
+
+Pour le morpion classique `3 x 3`, cela serait possible. L’espace de jeu est suffisamment petit pour construire une table parfaite.
+
+Pour l’Ultimate Tic Tac Toe, ce n’est pas réaliste dans le cadre de ce projet.
+
+Le jeu contient `81` cases, avec une contrainte de destination qui rend l’arbre de recherche très grand. Stocker toutes les parties ou toutes les positions utiles serait trop volumineux et reviendrait à créer une base de coups pré-calculée, ce qui est interdit par les consignes.
+
+L’approche retenue est donc :
+
+- utiliser Minimax / Alpha-Beta pour calculer les coups à la volée ;
+- utiliser la table de transposition comme cache temporaire pendant la recherche ;
+- tuner les poids heuristiques avec self-play ;
+- classer les profils par tournoi CSV ;
+- ne pas embarquer de dictionnaire de coups dans l’IA finale.
+
+---
+
+## Résultat du tuning actuel
+
+Un premier tuning local avait été lancé avec :
+
+```bash
+cargo run --release -- --train 3 5 3 80
+```
+
+Ensuite, un tournoi plus sérieux a été lancé sur Google Colab avec :
+
+```bash
+cargo run --release -- --tournament 24 4 4 250 5 tournament.csv
+```
+
+Ce tournoi a pris environ 35 minutes.
+
+Résultat du tournoi :
+
+```text
+Generation 1: best profile 1 points=288 wins=79 draws=51 losses=54 step=14%
+Generation 2: best profile 20 points=299 wins=86 draws=41 losses=57 step=10%
+Generation 3: best profile 0 points=276 wins=76 draws=48 losses=60 step=7%
+Generation 4: best profile 23 points=294 wins=84 draws=42 losses=58 step=5%
+Generation 5: best profile 23 points=302 wins=84 draws=50 losses=50 step=4%
+
+Tournament complete:
+profiles=24
+games_per_pair=4
+depth=4
+time_ms=250
+generations=5
+elapsed=2156790 ms
+csv=tournament.csv
+
+Winner profile 23:
+points=302
+wins=84
+draws=50
+losses=50
+```
+
+Le meilleur profil trouvé a été intégré dans les constantes par défaut :
 
 ```text
 MACRO_CENTER_WEIGHT = 1344
@@ -359,19 +755,45 @@ MOBILITY_WEIGHT = 3
 CLOSED_BOARD_PENALTY = 76
 ```
 
-Pour un meilleur entrainement avant competition, il faut lancer plus de parties, idealement dans Colab ou sur une machine qui peut tourner plusieurs minutes.
+Ce profil est moins défensif que les premiers réglages et semble mieux équilibrer les gains locaux, les menaces globales et la mobilité.
 
-## Strategie d'entrainement recommandee
+---
 
-Pour ameliorer vraiment le moteur :
+## Résultat benchmark actuel
 
-1. lancer un tuning court pour verifier que tout marche
-2. lancer un tuning moyen a profondeur 3 pour explorer vite beaucoup de variantes
-3. lancer un tuning plus lent a profondeur 4 ou 5 pour confirmer
-4. ne retenir que les poids qui gagnent aussi contre l'ancien profil
-5. tester en IA vs IA avec le temps officiel du challenge
+Après le tournoi, un benchmark a été lancé avec :
 
-Commandes conseillees :
+```bash
+cargo run --release -- --bench 200 4 250 benchmark.csv
+```
+
+Résultat obtenu :
+
+```text
+Benchmark complete:
+games=200
+X wins=88
+O wins=66
+draws=46
+elapsed=39441 ms
+csv=benchmark.csv
+```
+
+Ces résultats servent surtout à mesurer la stabilité et la vitesse du moteur. Pour valider définitivement un profil, il est préférable de le comparer directement contre l’ancien profil dans un mode duel.
+
+---
+
+## Stratégie d’entraînement recommandée
+
+Pour améliorer progressivement le moteur :
+
+1. lancer un tuning court pour vérifier que tout fonctionne ;
+2. lancer un tuning moyen à profondeur 3 pour explorer rapidement beaucoup de variantes ;
+3. lancer un tuning plus lent à profondeur 4 ou 5 pour confirmer ;
+4. ne retenir que les poids qui gagnent aussi contre l’ancien profil ;
+5. tester en IA contre IA avec un temps proche de celui du challenge.
+
+Commandes conseillées :
 
 ```bash
 cargo run --release -- --train 3 8 3 100
@@ -381,40 +803,148 @@ cargo run --release -- --tournament 20 4 4 200 5 tournament.csv
 cargo run --release -- --bench 100 4 200 benchmark.csv
 ```
 
-Si le temps officiel par coup est court, il vaut mieux entrainer avec un temps proche de l'evaluation finale.
+Si le temps officiel par coup est court, il vaut mieux entraîner avec un temps proche de l’évaluation finale.
 
-## Google Colab
+---
 
-Dans Colab, creer une cellule terminal/shell et installer Rust si besoin :
+## Exécution sur Google Colab
 
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source "$HOME/.cargo/env"
-rustc --version
-cargo --version
+Google Colab est utile pour lancer des tournois plus longs sans bloquer son ordinateur.
+
+Le programme est adapté à Colab car il est :
+
+- autonome ;
+- textuel ;
+- sans interface graphique ;
+- sans crate externe.
+
+---
+
+### 1. Préparer le projet en ZIP
+
+Avant d’envoyer le projet sur Colab, il est conseillé de ne pas inclure le dossier `target`.
+
+Le fichier `.gitignore` devrait contenir :
+
+```gitignore
+/target
+*.csv
 ```
 
-Puis lancer :
+Créer ensuite un fichier ZIP du projet.
 
-```bash
-cargo build --release
-cargo run --release
+---
+
+### 2. Importer le projet dans Colab
+
+Dans une cellule Colab :
+
+```python
+from google.colab import files
+uploaded = files.upload()
 ```
 
-Pour entrainer dans Colab :
+Sélectionner le fichier :
 
-```bash
-cargo run --release -- --train 5 12 4 200
-cargo run --release -- --tournament 20 4 4 200 5 tournament.csv
+```text
+TICTACTOE-AI.zip
 ```
 
-Colab est adapte a ce projet parce que le programme est autonome, textuel, sans interface graphique et sans crate externe.
+---
 
-## Parametres faciles a tuner
+### 3. Dézipper le projet
+
+Dans une cellule Colab :
+
+```bash
+!unzip TICTACTOE-AI.zip
+```
+
+Puis :
+
+```python
+%cd TICTACTOE-AI
+```
+
+---
+
+### 4. Installer Rust dans Colab
+
+Dans une cellule :
+
+```bash
+!curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+```
+
+Puis ajouter Cargo au PATH :
+
+```python
+import os
+os.environ["PATH"] += ":/root/.cargo/bin"
+```
+
+Vérifier l’installation :
+
+```bash
+!rustc --version
+!cargo --version
+```
+
+---
+
+### 5. Compiler dans Colab
+
+```bash
+!cargo build --release
+```
+
+---
+
+### 6. Lancer un tournoi dans Colab
+
+Exemple sérieux :
+
+```bash
+!cargo run --release -- --tournament 24 4 4 250 5 tournament.csv
+```
+
+---
+
+### 7. Lancer un benchmark dans Colab
+
+```bash
+!cargo run --release -- --bench 200 4 250 benchmark.csv
+```
+
+---
+
+### 8. Lire les résultats CSV dans Colab
+
+```python
+import pandas as pd
+
+df = pd.read_csv("tournament.csv")
+df.head(10)
+```
+
+---
+
+### 9. Télécharger les résultats
+
+```python
+from google.colab import files
+
+files.download("tournament.csv")
+files.download("benchmark.csv")
+```
+
+---
+
+## Paramètres faciles à tuner
 
 Les constantes les plus importantes sont en haut de `src/main.rs`.
 
-Les plus sensibles :
+Les poids les plus sensibles sont :
 
 - `MACRO_CENTER_WEIGHT`
 - `MACRO_CORNER_WEIGHT`
@@ -424,27 +954,36 @@ Les plus sensibles :
 - `DESTINATION_WEIGHT`
 - `MOBILITY_WEIGHT`
 
-Les parametres de recherche importants :
+Les paramètres de recherche importants sont :
 
-- profondeur maximale choisie au lancement
-- temps par coup
-- taille de la table de transposition via `TT_BITS`
-- fenetre d'aspiration
-- bonus de move ordering dans `order_moves`
+- profondeur maximale choisie au lancement ;
+- temps par coup ;
+- taille de la table de transposition via `TT_BITS` ;
+- fenêtre d’aspiration ;
+- bonus de move ordering dans `order_moves`.
 
-## Verification
+Ces paramètres permettent d’ajuster le comportement de l’IA selon le temps disponible le jour du challenge.
 
-Commandes utiles avant rendu :
+---
+
+## Commandes utiles avant rendu
+
+Avant de rendre le projet, lancer :
 
 ```bash
 cargo check
 cargo test
-cargo clippy -- -D warnings
 cargo build --release
 cargo run --release
 ```
 
-Test rapide IA vs IA avec entrees pipees :
+Si `clippy` est installé :
+
+```bash
+cargo clippy -- -D warnings
+```
+
+Test rapide IA contre IA avec entrées pipeées sous Linux ou macOS :
 
 ```bash
 printf "a\nx\n2\n50\nn\n" | cargo run --release
@@ -456,16 +995,110 @@ Sous PowerShell :
 @('a','x','2','50','n') | cargo run --release
 ```
 
+---
+
+## Problèmes fréquents
+
+### `cargo` n’est pas reconnu
+
+Rust n’est pas installé ou le terminal n’a pas été redémarré.
+
+Solution :
+
+```bash
+rustc --version
+cargo --version
+```
+
+Si les commandes ne fonctionnent pas, réinstaller Rust puis rouvrir le terminal.
+
+---
+
+### Le projet ne compile pas dans VS Code
+
+Vérifier que le terminal est ouvert dans le bon dossier.
+
+Il faut être dans le dossier qui contient :
+
+```text
+Cargo.toml
+```
+
+---
+
+### Le programme est lent
+
+Toujours lancer les tests de performance en release :
+
+```bash
+cargo run --release
+```
+
+Éviter :
+
+```bash
+cargo run
+```
+
+car le mode debug est beaucoup plus lent.
+
+---
+
+### Colab ne trouve pas Cargo
+
+Après installation de Rust dans Colab, il faut ajouter Cargo au PATH :
+
+```python
+import os
+os.environ["PATH"] += ":/root/.cargo/bin"
+```
+
+---
+
 ## Limites actuelles
 
-Le moteur est deja complet et jouable. Les principales pistes demandees ont ete avancees : tests, benchmark CSV, tuning plus varie, extensions tactiques et move ordering plus fin.
+Le moteur est complet et jouable, mais certaines améliorations restent possibles.
 
-Il reste surtout des ameliorations de confort ou de recherche plus avancee :
+Limites principales :
 
-- ajouter davantage de tests sur des parties completes et positions piegeuses
-- exporter aussi les statistiques de noeuds et profondeurs dans le benchmark CSV
-- comparer automatiquement plusieurs profils de poids dans un mini-tournoi
-- ajouter un mode de configuration par fichier si l'on veut eviter de recompiler les poids
-- separer le fichier en modules si le projet grossit
+- l’heuristique reste perfectible ;
+- le moteur n’est pas parallélisé ;
+- il n’y a pas d’interface graphique ;
+- la force dépend fortement du temps accordé par coup ;
+- les poids ont été optimisés par tournoi, mais pourraient être encore mieux confirmés par des duels directs entre profils.
 
-Ces ameliorations ne sont pas necessaires pour executer le programme, mais elles aideraient a gagner en fiabilite et en force.
+---
+
+## Améliorations possibles
+
+Les améliorations futures les plus intéressantes seraient :
+
+- ajouter davantage de tests sur des parties complètes ;
+- tester des positions tactiques piégeuses ;
+- ajouter un mode duel automatique entre ancien et nouveau profil ;
+- améliorer la gestion du temps selon l’avancement de la partie ;
+- ajouter du multi-threading ;
+- tester des variantes de Late Move Reduction ;
+- séparer le code en plusieurs modules si le projet grossit ;
+- ajouter un mode de configuration par fichier pour changer les poids sans recompiler.
+
+Ces améliorations ne sont pas indispensables pour exécuter le programme, mais elles pourraient augmenter la fiabilité et la force du moteur.
+
+---
+
+## Conclusion
+
+Ce projet met en place une IA complète et performante pour l’Ultimate Tic Tac Toe.
+
+Le moteur respecte les contraintes du challenge :
+
+- utilisation de Minimax ;
+- élagage Alpha-Beta ;
+- décisions calculées à la volée ;
+- pas de dictionnaire de coups ;
+- heuristique maison ;
+- exécution possible sur terminal et Google Colab.
+
+Le choix de Rust permet d’obtenir un moteur rapide, capable d’explorer efficacement un grand nombre de positions en temps limité.
+
+Le projet combine donc une approche algorithmique classique avec des optimisations pratiques issues des moteurs de jeux, afin de produire une IA solide, stable et compétitive dans un cadre universitaire.
